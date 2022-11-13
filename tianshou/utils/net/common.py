@@ -491,8 +491,6 @@ class HypergraphNet(nn.Module):
             self,
             state_shape: Union[int, Sequence[int]],
             action_shape: int = 3,
-            # num_heads_r1: int = 0,
-            # num_heads_r2: int = 0,
             action_per_branch: int = 2,
             common_hidden_sizes: List[int] = [],
             value_hidden_sizes: List[int] = [],
@@ -507,7 +505,7 @@ class HypergraphNet(nn.Module):
         self.device = device
         self.original_action_dim = action_shape
         self.num_heads_r1 = action_shape * action_per_branch
-        self.num_heads_r2 = action_shape * action_per_branch ** 2
+        self.num_heads_r2 = int(action_shape * (action_shape-1) / 2 * action_per_branch ** 2)
         self.mix_type = mix_type
         self.hyper_order = hyper_order
         self.mix_net = torch.nn.Linear(2, 1)
@@ -617,7 +615,6 @@ class HypergraphNet(nn.Module):
         # action_scores = action_scores - torch.mean(action_scores, 2, keepdim=True)  # 论文公式1
         # logits = value_out + action_scores
         # return logits, state
-
 
 def get_dict_state_decorator(
         state_shape: Dict[str, Union[int, Sequence[int]]], keys: Sequence[str]

@@ -149,11 +149,17 @@ class HGQNr2LinearMixPolicy(DQNPolicy):
         weight = batch.pop("weight", 1.0)
         # act = to_torch(batch.act, dtype=torch.long, device=batch.returns.device)
         act = batch.act  # shape 512,3
-        if self.hyper_order == 1:
-            act_index = np.array([action[0] * self.action_per_branch ** 2 for action in act])
-        elif self.hyper_order == 2:
-            act_index = np.array([action[0] * self.action_per_branch ** 2 + action[1] * self.action_per_branch ** 1 +
-                              action[1] * self.action_per_branch ** 0 for action in act])
+
+        if self.original_action_dim == 6:
+            act_index = np.array([action_dims[0] * self.action_per_branch ** 5 + action_dims[1] * self.action_per_branch ** 4 +
+                              action_dims[2] * self.action_per_branch ** 3 + action_dims[3] * self.action_per_branch ** 2+
+                                  action_dims[4] * self.action_per_branch ** 1 + action_dims[5] * self.action_per_branch ** 0 for action_dims in act])
+
+        elif self.original_action_dim == 3:
+            act_index = np.array([action_dims[0] * self.action_per_branch ** 2 + action_dims[1] * self.action_per_branch ** 1 +
+                              action_dims[2] * self.action_per_branch ** 0 for action_dims in act])
+        else:
+            act_index = np.array([np.array([action_dims[i] * self.action_per_branch ** (self.original_action_dim-1-i) for i in range(self.original_action_dim)]).sum() for action_dims in act])
 
         act_index = to_torch(act_index, dtype=torch.long, device=batch.returns.device)
 
