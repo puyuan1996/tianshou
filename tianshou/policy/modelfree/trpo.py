@@ -50,15 +50,15 @@ class TRPOPolicy(NPGPolicy):
     """
 
     def __init__(
-        self,
-        actor: torch.nn.Module,
-        critic: torch.nn.Module,
-        optim: torch.optim.Optimizer,
-        dist_fn: Type[torch.distributions.Distribution],
-        max_kl: float = 0.01,
-        backtrack_coeff: float = 0.8,
-        max_backtracks: int = 10,
-        **kwargs: Any,
+            self,
+            actor: torch.nn.Module,
+            critic: torch.nn.Module,
+            optim: torch.optim.Optimizer,
+            dist_fn: Type[torch.distributions.Distribution],
+            max_kl: float = 0.01,
+            backtrack_coeff: float = 0.8,
+            max_backtracks: int = 10,
+            **kwargs: Any,
     ) -> None:
         super().__init__(actor, critic, optim, dist_fn, **kwargs)
         self._max_backtracks = max_backtracks
@@ -67,7 +67,7 @@ class TRPOPolicy(NPGPolicy):
         self._optim_critic_iters: int
 
     def learn(  # type: ignore
-        self, batch: Batch, batch_size: int, repeat: int, **kwargs: Any
+            self, batch: Batch, batch_size: int, repeat: int, **kwargs: Any
     ) -> Dict[str, List[float]]:
         actor_losses, vf_losses, step_sizes, kls = [], [], [], []
         for _ in range(repeat):
@@ -112,7 +112,7 @@ class TRPOPolicy(NPGPolicy):
                         # calculate kl and if in bound, loss actually down
                         new_dist = self(minibatch).dist
                         new_dratio = (
-                            new_dist.log_prob(minibatch.act) - minibatch.logp_old
+                                new_dist.log_prob(minibatch.act) - minibatch.logp_old
                         ).exp().float()
                         new_dratio = new_dratio.reshape(new_dratio.size(0),
                                                         -1).transpose(0, 1)

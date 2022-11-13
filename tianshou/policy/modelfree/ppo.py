@@ -61,17 +61,17 @@ class PPOPolicy(A2CPolicy):
     """
 
     def __init__(
-        self,
-        actor: torch.nn.Module,
-        critic: torch.nn.Module,
-        optim: torch.optim.Optimizer,
-        dist_fn: Type[torch.distributions.Distribution],
-        eps_clip: float = 0.2,
-        dual_clip: Optional[float] = None,
-        value_clip: bool = False,
-        advantage_normalization: bool = True,
-        recompute_advantage: bool = False,
-        **kwargs: Any,
+            self,
+            actor: torch.nn.Module,
+            critic: torch.nn.Module,
+            optim: torch.optim.Optimizer,
+            dist_fn: Type[torch.distributions.Distribution],
+            eps_clip: float = 0.2,
+            dual_clip: Optional[float] = None,
+            value_clip: bool = False,
+            advantage_normalization: bool = True,
+            recompute_advantage: bool = False,
+            **kwargs: Any,
     ) -> None:
         super().__init__(actor, critic, optim, dist_fn, **kwargs)
         self._eps_clip = eps_clip
@@ -87,7 +87,7 @@ class PPOPolicy(A2CPolicy):
         self._actor_critic: ActorCritic
 
     def process_fn(
-        self, batch: Batch, buffer: ReplayBuffer, indices: np.ndarray
+            self, batch: Batch, buffer: ReplayBuffer, indices: np.ndarray
     ) -> Batch:
         if self._recompute_adv:
             # buffer input `buffer` and `indices` to be used in `learn()`.
@@ -102,7 +102,7 @@ class PPOPolicy(A2CPolicy):
         return batch
 
     def learn(  # type: ignore
-        self, batch: Batch, batch_size: int, repeat: int, **kwargs: Any
+            self, batch: Batch, batch_size: int, repeat: int, **kwargs: Any
     ) -> Dict[str, List[float]]:
         losses, clip_losses, vf_losses, ent_losses = [], [], [], []
         for step in range(repeat):
@@ -131,7 +131,7 @@ class PPOPolicy(A2CPolicy):
                 value = self.critic(minibatch.obs).flatten()
                 if self._value_clip:
                     v_clip = minibatch.v_s + \
-                        (value - minibatch.v_s).clamp(-self._eps_clip, self._eps_clip)
+                             (value - minibatch.v_s).clamp(-self._eps_clip, self._eps_clip)
                     vf1 = (minibatch.returns - value).pow(2)
                     vf2 = (minibatch.returns - v_clip).pow(2)
                     vf_loss = torch.max(vf1, vf2).mean()
@@ -140,7 +140,7 @@ class PPOPolicy(A2CPolicy):
                 # calculate regularization and overall loss
                 ent_loss = dist.entropy().mean()
                 loss = clip_loss + self._weight_vf * vf_loss \
-                    - self._weight_ent * ent_loss
+                       - self._weight_ent * ent_loss
                 self.optim.zero_grad()
                 loss.backward()
                 if self._grad_norm:  # clip large gradient

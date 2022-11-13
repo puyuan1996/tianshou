@@ -52,21 +52,21 @@ class SACPolicy(DDPGPolicy):
     """
 
     def __init__(
-        self,
-        actor: torch.nn.Module,
-        actor_optim: torch.optim.Optimizer,
-        critic1: torch.nn.Module,
-        critic1_optim: torch.optim.Optimizer,
-        critic2: torch.nn.Module,
-        critic2_optim: torch.optim.Optimizer,
-        tau: float = 0.005,
-        gamma: float = 0.99,
-        alpha: Union[float, Tuple[float, torch.Tensor, torch.optim.Optimizer]] = 0.2,
-        reward_normalization: bool = False,
-        estimation_step: int = 1,
-        exploration_noise: Optional[BaseNoise] = None,
-        deterministic_eval: bool = True,
-        **kwargs: Any,
+            self,
+            actor: torch.nn.Module,
+            actor_optim: torch.optim.Optimizer,
+            critic1: torch.nn.Module,
+            critic1_optim: torch.optim.Optimizer,
+            critic2: torch.nn.Module,
+            critic2_optim: torch.optim.Optimizer,
+            tau: float = 0.005,
+            gamma: float = 0.99,
+            alpha: Union[float, Tuple[float, torch.Tensor, torch.optim.Optimizer]] = 0.2,
+            reward_normalization: bool = False,
+            estimation_step: int = 1,
+            exploration_noise: Optional[BaseNoise] = None,
+            deterministic_eval: bool = True,
+            **kwargs: Any,
     ) -> None:
         super().__init__(
             None, None, None, None, tau, gamma, exploration_noise,
@@ -105,11 +105,11 @@ class SACPolicy(DDPGPolicy):
         self.soft_update(self.critic2_old, self.critic2, self.tau)
 
     def forward(  # type: ignore
-        self,
-        batch: Batch,
-        state: Optional[Union[dict, Batch, np.ndarray]] = None,
-        input: str = "obs",
-        **kwargs: Any,
+            self,
+            batch: Batch,
+            state: Optional[Union[dict, Batch, np.ndarray]] = None,
+            input: str = "obs",
+            **kwargs: Any,
     ) -> Batch:
         obs = batch[input]
         logits, hidden = self.actor(obs, state=state, info=batch.info)
@@ -160,8 +160,8 @@ class SACPolicy(DDPGPolicy):
         current_q1a = self.critic1(batch.obs, act).flatten()
         current_q2a = self.critic2(batch.obs, act).flatten()
         actor_loss = (
-            self._alpha * obs_result.log_prob.flatten() -
-            torch.min(current_q1a, current_q2a)
+                self._alpha * obs_result.log_prob.flatten() -
+                torch.min(current_q1a, current_q2a)
         ).mean()
         self.actor_optim.zero_grad()
         actor_loss.backward()

@@ -39,16 +39,16 @@ class DQNPolicy(BasePolicy):
     """
 
     def __init__(
-        self,
-        model: torch.nn.Module,
-        optim: torch.optim.Optimizer,
-        discount_factor: float = 0.99,
-        estimation_step: int = 1,
-        target_update_freq: int = 0,
-        reward_normalization: bool = False,
-        is_double: bool = True,
-        clip_loss_grad: bool = False,
-        **kwargs: Any,
+            self,
+            model: torch.nn.Module,
+            optim: torch.optim.Optimizer,
+            discount_factor: float = 0.99,
+            estimation_step: int = 1,
+            target_update_freq: int = 0,
+            reward_normalization: bool = False,
+            is_double: bool = True,
+            clip_loss_grad: bool = False,
+            **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         self.model = model
@@ -96,7 +96,7 @@ class DQNPolicy(BasePolicy):
             return target_q.max(dim=1)[0]
 
     def process_fn(
-        self, batch: Batch, buffer: ReplayBuffer, indices: np.ndarray
+            self, batch: Batch, buffer: ReplayBuffer, indices: np.ndarray
     ) -> Batch:
         """Compute the n-step return for Q-learning targets.
 
@@ -110,7 +110,7 @@ class DQNPolicy(BasePolicy):
         return batch
 
     def compute_q_value(
-        self, logits: torch.Tensor, mask: Optional[np.ndarray]
+            self, logits: torch.Tensor, mask: Optional[np.ndarray]
     ) -> torch.Tensor:
         """Compute the q value based on the network's raw output and action mask."""
         if mask is not None:
@@ -120,12 +120,12 @@ class DQNPolicy(BasePolicy):
         return logits
 
     def forward(
-        self,
-        batch: Batch,
-        state: Optional[Union[dict, Batch, np.ndarray]] = None,
-        model: str = "model",
-        input: str = "obs",
-        **kwargs: Any,
+            self,
+            batch: Batch,
+            state: Optional[Union[dict, Batch, np.ndarray]] = None,
+            model: str = "model",
+            input: str = "obs",
+            **kwargs: Any,
     ) -> Batch:
         """Compute action over the given batch data.
 
@@ -188,9 +188,9 @@ class DQNPolicy(BasePolicy):
         return {"loss": loss.item()}
 
     def exploration_noise(
-        self,
-        act: Union[np.ndarray, Batch],
-        batch: Batch,
+            self,
+            act: Union[np.ndarray, Batch],
+            batch: Batch,
     ) -> Union[np.ndarray, Batch]:
         if isinstance(act, np.ndarray) and not np.isclose(self.eps, 0.0):
             bsz = len(act)

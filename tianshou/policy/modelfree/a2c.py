@@ -51,17 +51,17 @@ class A2CPolicy(PGPolicy):
     """
 
     def __init__(
-        self,
-        actor: torch.nn.Module,
-        critic: torch.nn.Module,
-        optim: torch.optim.Optimizer,
-        dist_fn: Type[torch.distributions.Distribution],
-        vf_coef: float = 0.5,
-        ent_coef: float = 0.01,
-        max_grad_norm: Optional[float] = None,
-        gae_lambda: float = 0.95,
-        max_batchsize: int = 256,
-        **kwargs: Any
+            self,
+            actor: torch.nn.Module,
+            critic: torch.nn.Module,
+            optim: torch.optim.Optimizer,
+            dist_fn: Type[torch.distributions.Distribution],
+            vf_coef: float = 0.5,
+            ent_coef: float = 0.01,
+            max_grad_norm: Optional[float] = None,
+            gae_lambda: float = 0.95,
+            max_batchsize: int = 256,
+            **kwargs: Any
     ) -> None:
         super().__init__(actor, optim, dist_fn, **kwargs)
         self.critic = critic
@@ -74,14 +74,14 @@ class A2CPolicy(PGPolicy):
         self._actor_critic = ActorCritic(self.actor, self.critic)
 
     def process_fn(
-        self, batch: Batch, buffer: ReplayBuffer, indices: np.ndarray
+            self, batch: Batch, buffer: ReplayBuffer, indices: np.ndarray
     ) -> Batch:
         batch = self._compute_returns(batch, buffer, indices)
         batch.act = to_torch_as(batch.act, batch.v_s)
         return batch
 
     def _compute_returns(
-        self, batch: Batch, buffer: ReplayBuffer, indices: np.ndarray
+            self, batch: Batch, buffer: ReplayBuffer, indices: np.ndarray
     ) -> Batch:
         v_s, v_s_ = [], []
         with torch.no_grad():
@@ -109,7 +109,7 @@ class A2CPolicy(PGPolicy):
         )
         if self._rew_norm:
             batch.returns = unnormalized_returns / \
-                np.sqrt(self.ret_rms.var + self._eps)
+                            np.sqrt(self.ret_rms.var + self._eps)
             self.ret_rms.update(unnormalized_returns)
         else:
             batch.returns = unnormalized_returns
@@ -118,7 +118,7 @@ class A2CPolicy(PGPolicy):
         return batch
 
     def learn(  # type: ignore
-        self, batch: Batch, batch_size: int, repeat: int, **kwargs: Any
+            self, batch: Batch, batch_size: int, repeat: int, **kwargs: Any
     ) -> Dict[str, List[float]]:
         losses, actor_losses, vf_losses, ent_losses = [], [], [], []
         for _ in range(repeat):
@@ -134,7 +134,7 @@ class A2CPolicy(PGPolicy):
                 # calculate regularization and overall loss
                 ent_loss = dist.entropy().mean()
                 loss = actor_loss + self._weight_vf * vf_loss \
-                    - self._weight_ent * ent_loss
+                       - self._weight_ent * ent_loss
                 self.optim.zero_grad()
                 loss.backward()
                 if self._grad_norm:  # clip large gradient

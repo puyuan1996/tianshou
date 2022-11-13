@@ -35,17 +35,17 @@ class C51Policy(DQNPolicy):
     """
 
     def __init__(
-        self,
-        model: torch.nn.Module,
-        optim: torch.optim.Optimizer,
-        discount_factor: float = 0.99,
-        num_atoms: int = 51,
-        v_min: float = -10.0,
-        v_max: float = 10.0,
-        estimation_step: int = 1,
-        target_update_freq: int = 0,
-        reward_normalization: bool = False,
-        **kwargs: Any,
+            self,
+            model: torch.nn.Module,
+            optim: torch.optim.Optimizer,
+            discount_factor: float = 0.99,
+            num_atoms: int = 51,
+            v_min: float = -10.0,
+            v_max: float = 10.0,
+            estimation_step: int = 1,
+            target_update_freq: int = 0,
+            reward_normalization: bool = False,
+            **kwargs: Any,
     ) -> None:
         super().__init__(
             model, optim, discount_factor, estimation_step, target_update_freq,
@@ -66,7 +66,7 @@ class C51Policy(DQNPolicy):
         return self.support.repeat(len(indices), 1)  # shape: [bsz, num_atoms]
 
     def compute_q_value(
-        self, logits: torch.Tensor, mask: Optional[np.ndarray]
+            self, logits: torch.Tensor, mask: Optional[np.ndarray]
     ) -> torch.Tensor:
         return super().compute_q_value((logits * self.support).sum(2), mask)
 
@@ -83,9 +83,9 @@ class C51Policy(DQNPolicy):
         # An amazing trick for calculating the projection gracefully.
         # ref: https://github.com/ShangtongZhang/DeepRL
         target_dist = (
-            1 - (target_support.unsqueeze(1) - self.support.view(1, -1, 1)).abs() /
-            self.delta_z
-        ).clamp(0, 1) * next_dist.unsqueeze(1)
+                              1 - (target_support.unsqueeze(1) - self.support.view(1, -1, 1)).abs() /
+                              self.delta_z
+                      ).clamp(0, 1) * next_dist.unsqueeze(1)
         return target_dist.sum(-1)
 
     def learn(self, batch: Batch, **kwargs: Any) -> Dict[str, float]:

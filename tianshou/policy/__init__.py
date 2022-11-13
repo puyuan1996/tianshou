@@ -5,6 +5,12 @@ from tianshou.policy.base import BasePolicy
 from tianshou.policy.random import RandomPolicy
 from tianshou.policy.modelfree.dqn import DQNPolicy
 from tianshou.policy.modelfree.bdq import BranchingDQNPolicy
+
+from tianshou.policy.modelfree.hgqn_r1_sum import HGQNr1SumMixPolicy
+from tianshou.policy.modelfree.hgqn_r1_linear import HGQNr1LinearMixPolicy
+from tianshou.policy.modelfree.hgqn_r2_sum import HGQNr2SumMixPolicy
+from tianshou.policy.modelfree.hgqn_r2_linear import HGQNr2LinearMixPolicy
+
 from tianshou.policy.modelfree.c51 import C51Policy
 from tianshou.policy.modelfree.rainbow import RainbowPolicy
 from tianshou.policy.modelfree.qrdqn import QRDQNPolicy
@@ -37,6 +43,8 @@ __all__ = [
     "RandomPolicy",
     "DQNPolicy",
     "BranchingDQNPolicy",
+    'HGQNr1SumMixPolicy',
+    'HGQNr1LinearMixPolicy',
     "C51Policy",
     "RainbowPolicy",
     "QRDQNPolicy",

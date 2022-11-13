@@ -21,11 +21,11 @@ ModuleType = Type[nn.Module]
 
 
 def miniblock(
-    input_size: int,
-    output_size: int = 0,
-    norm_layer: Optional[ModuleType] = None,
-    activation: Optional[ModuleType] = None,
-    linear_layer: Type[nn.Linear] = nn.Linear,
+        input_size: int,
+        output_size: int = 0,
+        norm_layer: Optional[ModuleType] = None,
+        activation: Optional[ModuleType] = None,
+        linear_layer: Type[nn.Linear] = nn.Linear,
 ) -> List[nn.Module]:
     """Construct a miniblock with given input/output-size, norm layer and \
     activation."""
@@ -63,15 +63,15 @@ class MLP(nn.Module):
     """
 
     def __init__(
-        self,
-        input_dim: int,
-        output_dim: int = 0,
-        hidden_sizes: Sequence[int] = (),
-        norm_layer: Optional[Union[ModuleType, Sequence[ModuleType]]] = None,
-        activation: Optional[Union[ModuleType, Sequence[ModuleType]]] = nn.ReLU,
-        device: Optional[Union[str, int, torch.device]] = None,
-        linear_layer: Type[nn.Linear] = nn.Linear,
-        flatten_input: bool = True,
+            self,
+            input_dim: int,
+            output_dim: int = 0,
+            hidden_sizes: Sequence[int] = (),
+            norm_layer: Optional[Union[ModuleType, Sequence[ModuleType]]] = None,
+            activation: Optional[Union[ModuleType, Sequence[ModuleType]]] = nn.ReLU,
+            device: Optional[Union[str, int, torch.device]] = None,
+            linear_layer: Type[nn.Linear] = nn.Linear,
+            flatten_input: bool = True,
     ) -> None:
         super().__init__()
         self.device = device
@@ -94,7 +94,7 @@ class MLP(nn.Module):
         hidden_sizes = [input_dim] + list(hidden_sizes)
         model = []
         for in_dim, out_dim, norm, activ in zip(
-            hidden_sizes[:-1], hidden_sizes[1:], norm_layer_list, activation_list
+                hidden_sizes[:-1], hidden_sizes[1:], norm_layer_list, activation_list
         ):
             model += miniblock(in_dim, out_dim, norm, activ, linear_layer)
         if output_dim > 0:
@@ -157,18 +157,18 @@ class Net(nn.Module):
     """
 
     def __init__(
-        self,
-        state_shape: Union[int, Sequence[int]],
-        action_shape: Union[int, Sequence[int]] = 0,
-        hidden_sizes: Sequence[int] = (),
-        norm_layer: Optional[ModuleType] = None,
-        activation: Optional[ModuleType] = nn.ReLU,
-        device: Union[str, int, torch.device] = "cpu",
-        softmax: bool = False,
-        concat: bool = False,
-        num_atoms: int = 1,
-        dueling_param: Optional[Tuple[Dict[str, Any], Dict[str, Any]]] = None,
-        linear_layer: Type[nn.Linear] = nn.Linear,
+            self,
+            state_shape: Union[int, Sequence[int]],
+            action_shape: Union[int, Sequence[int]] = 0,
+            hidden_sizes: Sequence[int] = (),
+            norm_layer: Optional[ModuleType] = None,
+            activation: Optional[ModuleType] = nn.ReLU,
+            device: Union[str, int, torch.device] = "cpu",
+            softmax: bool = False,
+            concat: bool = False,
+            num_atoms: int = 1,
+            dueling_param: Optional[Tuple[Dict[str, Any], Dict[str, Any]]] = None,
+            linear_layer: Type[nn.Linear] = nn.Linear,
     ) -> None:
         super().__init__()
         self.device = device
@@ -204,10 +204,10 @@ class Net(nn.Module):
             self.output_dim = self.Q.output_dim
 
     def forward(
-        self,
-        obs: Union[np.ndarray, torch.Tensor],
-        state: Any = None,
-        info: Dict[str, Any] = {},
+            self,
+            obs: Union[np.ndarray, torch.Tensor],
+            state: Any = None,
+            info: Dict[str, Any] = {},
     ) -> Tuple[torch.Tensor, Any]:
         """Mapping: obs -> flatten (inside MLP)-> logits."""
         logits = self.model(obs)
@@ -233,12 +233,12 @@ class Recurrent(nn.Module):
     """
 
     def __init__(
-        self,
-        layer_num: int,
-        state_shape: Union[int, Sequence[int]],
-        action_shape: Union[int, Sequence[int]],
-        device: Union[str, int, torch.device] = "cpu",
-        hidden_layer_size: int = 128,
+            self,
+            layer_num: int,
+            state_shape: Union[int, Sequence[int]],
+            action_shape: Union[int, Sequence[int]],
+            device: Union[str, int, torch.device] = "cpu",
+            hidden_layer_size: int = 128,
     ) -> None:
         super().__init__()
         self.device = device
@@ -252,10 +252,10 @@ class Recurrent(nn.Module):
         self.fc2 = nn.Linear(hidden_layer_size, int(np.prod(action_shape)))
 
     def forward(
-        self,
-        obs: Union[np.ndarray, torch.Tensor],
-        state: Optional[Dict[str, torch.Tensor]] = None,
-        info: Dict[str, Any] = {},
+            self,
+            obs: Union[np.ndarray, torch.Tensor],
+            state: Optional[Dict[str, torch.Tensor]] = None,
+            info: Dict[str, Any] = {},
     ) -> Tuple[torch.Tensor, Dict[str, torch.Tensor]]:
         """Mapping: obs -> flatten -> logits.
 
@@ -341,11 +341,11 @@ class EnsembleLinear(nn.Module):
     """
 
     def __init__(
-        self,
-        ensemble_size: int,
-        in_feature: int,
-        out_feature: int,
-        bias: bool = True,
+            self,
+            ensemble_size: int,
+            in_feature: int,
+            out_feature: int,
+            bias: bool = True,
     ) -> None:
         super().__init__()
 
@@ -398,16 +398,16 @@ class BranchingNet(nn.Module):
     """
 
     def __init__(
-        self,
-        state_shape: Union[int, Sequence[int]],
-        num_branches: int = 0,
-        action_per_branch: int = 2,
-        common_hidden_sizes: List[int] = [],
-        value_hidden_sizes: List[int] = [],
-        action_hidden_sizes: List[int] = [],
-        norm_layer: Optional[ModuleType] = None,
-        activation: Optional[ModuleType] = nn.ReLU,
-        device: Union[str, int, torch.device] = "cpu",
+            self,
+            state_shape: Union[int, Sequence[int]],
+            num_branches: int = 0,
+            action_per_branch: int = 2,
+            common_hidden_sizes: List[int] = [],
+            value_hidden_sizes: List[int] = [],
+            action_hidden_sizes: List[int] = [],
+            norm_layer: Optional[ModuleType] = None,
+            activation: Optional[ModuleType] = nn.ReLU,
+            device: Union[str, int, torch.device] = "cpu",
     ) -> None:
         super().__init__()
         self.device = device
@@ -440,10 +440,10 @@ class BranchingNet(nn.Module):
         )
 
     def forward(
-        self,
-        obs: Union[np.ndarray, torch.Tensor],
-        state: Any = None,
-        info: Dict[str, Any] = {},
+            self,
+            obs: Union[np.ndarray, torch.Tensor],
+            state: Any = None,
+            info: Dict[str, Any] = {},
     ) -> Tuple[torch.Tensor, Any]:
         """Mapping: obs -> model -> logits."""
         common_out = self.common(obs)
@@ -458,8 +458,169 @@ class BranchingNet(nn.Module):
         return logits, state
 
 
+class HypergraphNet(nn.Module):
+    """Branching dual Q network.
+
+    Network for the BranchingDQNPolicy, it uses a common network module, a value module
+    and action "branches" one for each dimension.It allows for a linear scaling
+    of Q-value the output w.r.t. the number of dimensions in the action space.
+    For more info please refer to: arXiv:1711.08946.
+    :param state_shape: int or a sequence of int of the shape of state.
+    :param action_shape: int or a sequence of int of the shape of action.
+    :param action_peer_branch: int or a sequence of int of the number of actions in
+    each dimension.
+    :param common_hidden_sizes: shape of the common MLP network passed in as a list.
+    :param value_hidden_sizes: shape of the value MLP network passed in as a list.
+    :param action_hidden_sizes: shape of the action MLP network passed in as a list.
+    :param norm_layer: use which normalization before activation, e.g.,
+    ``nn.LayerNorm`` and ``nn.BatchNorm1d``. Default to no normalization.
+    You can also pass a list of normalization modules with the same length
+    of hidden_sizes, to use different normalization module in different
+    layers. Default to no normalization.
+    :param activation: which activation to use after each layer, can be both
+    the same activation for all layers if passed in nn.Module, or different
+    activation for different Modules if passed in a list. Default to
+    nn.ReLU.
+    :param device: specify the device when the network actually runs. Default
+    to "cpu".
+    :param bool softmax: whether to apply a softmax layer over the last layer's
+    output.
+    """
+
+    def __init__(
+            self,
+            state_shape: Union[int, Sequence[int]],
+            action_shape: int = 3,
+            # num_heads_r1: int = 0,
+            # num_heads_r2: int = 0,
+            action_per_branch: int = 2,
+            common_hidden_sizes: List[int] = [],
+            value_hidden_sizes: List[int] = [],
+            action_hidden_sizes: List[int] = [],
+            norm_layer: Optional[ModuleType] = None,
+            activation: Optional[ModuleType] = nn.ReLU,
+            device: Union[str, int, torch.device] = "cpu",
+            mix_type='sum_mix',
+            hyper_order=2,
+    ) -> None:
+        super().__init__()
+        self.device = device
+        self.original_action_dim = action_shape
+        self.num_heads_r1 = action_shape * action_per_branch
+        self.num_heads_r2 = action_shape * action_per_branch ** 2
+        self.mix_type = mix_type
+        self.hyper_order = hyper_order
+        self.mix_net = torch.nn.Linear(2, 1)
+
+        self.action_per_branch = action_per_branch
+        # common network
+        common_input_dim = int(np.prod(state_shape))
+        common_output_dim = 0
+        self.common = MLP(
+            common_input_dim, common_output_dim, common_hidden_sizes, norm_layer,
+            activation, device
+        )
+        # value network
+        value_input_dim = common_hidden_sizes[-1]
+        value_output_dim = 1
+        self.value = MLP(
+            value_input_dim, value_output_dim, value_hidden_sizes, norm_layer,
+            activation, device
+        )
+        # action branching network
+        action_input_dim = common_hidden_sizes[-1]
+        self.branches_r1 = MLP(
+            action_input_dim, self.num_heads_r1, action_hidden_sizes,
+            norm_layer, activation, device
+        )
+
+        self.branches_r2 = MLP(
+            action_input_dim, self.num_heads_r2, action_hidden_sizes,
+            norm_layer, activation, device
+        )
+
+    def forward(
+            self,
+            obs: Union[np.ndarray, torch.Tensor],
+            state: Any = None,
+            info: Dict[str, Any] = {},
+    ) -> Tuple[torch.Tensor, Any]:
+        """Mapping: obs -> model -> logits."""
+        common_out = self.common(obs)
+        value_out = self.value(common_out)
+        value_out = torch.unsqueeze(value_out, 1)
+        action_out = []
+        action_out.append(self.branches_r1(common_out))
+        action_out.append(self.branches_r2(common_out))
+
+        from tianshou.policy.modelfree.utils import create_sum_order_1_map
+        from tianshou.data import Batch, ReplayBuffer, to_numpy, to_torch, to_torch_as
+
+        # e.g., n=3,
+        # rank-1, 1, 2, 3
+        num_branch_pairs = int(self.original_action_dim)
+        num_actions = self.action_per_branch ** self.original_action_dim  # all possible actions
+
+        order_1_mapping_matrices = create_sum_order_1_map(
+            num_branches=self.original_action_dim, num_sub_actions_per_branch=self.action_per_branch)
+
+        order_1_mapping_matrices = np.array(order_1_mapping_matrices)
+        order_1_mapping_matrices = torch.transpose(to_torch(order_1_mapping_matrices), 0, 1)
+        assert order_1_mapping_matrices.shape == (num_branch_pairs * self.action_per_branch,
+                                                  num_actions)
+        # 3 * 5,  5**3 = [15, 125]
+        order_1_values = torch.matmul(to_torch(action_out[0]),
+                                      to_torch_as(order_1_mapping_matrices, to_torch(action_out[0])))
+        assert order_1_values.shape == (action_out[0].shape[0], num_actions)
+        # [batch_size, |A|]=[512,125]
+
+        if self.hyper_order==2:
+            from tianshou.policy.modelfree.utils import create_sum_order_2_map
+            # e.g., n=3,
+            # rank-2: 3*2/2=2, (1,2), (2,3), (1,3)
+            num_branch_pairs = int(self.original_action_dim * (self.original_action_dim - 1) / 2)
+            num_actions = self.action_per_branch ** self.original_action_dim  # all possible actions
+
+            order_2_mapping_matrices = create_sum_order_2_map(
+                num_branches=self.original_action_dim, num_sub_actions_per_branch=self.action_per_branch)
+
+            order_2_mapping_matrices = np.array(order_2_mapping_matrices)
+            order_2_mapping_matrices = torch.transpose(to_torch(order_2_mapping_matrices), 0, 1)
+            assert order_2_mapping_matrices.shape == (num_branch_pairs * self.action_per_branch ** 2,
+                                                      num_actions)
+            # 3 * 5**2,  5**3 = [75, 125]
+            order_2_values = torch.matmul(to_torch(action_out[1]),
+                                          to_torch_as(order_2_mapping_matrices, to_torch(action_out[1])))
+            assert order_2_values.shape == (action_out[1].shape[0], num_actions)
+            # [batch_size, |A|]==[512, 125]
+
+            # mix_target_q_torch = torch.sum(to_torch(target_q), dim=-1)  # [512, 1]
+            # mix_target_q = to_numpy(mix_target_q_torch)  # [512, ]
+
+            if self.mix_type == 'sum_mix':
+                q_values = order_1_values + order_2_values
+                assert q_values.shape == (action_out[0].shape[0], num_actions)
+            elif self.mix_type == 'linear_mix':
+                q_values = self.mix_net(torch.cat([order_1_values.unsqueeze(-1), order_2_values.unsqueeze(-1)], -1)).squeeze(-1)
+                assert q_values.shape == (action_out[0].shape[0], num_actions)
+
+            return q_values, order_1_values, order_2_values, value_out, state
+
+        else:
+            return order_1_values, order_1_values, None, value_out, state
+
+
+
+        # return action_out, value_out, state
+
+        # action_scores = torch.stack(action_out, 1)
+        # action_scores = action_scores - torch.mean(action_scores, 2, keepdim=True)  # 论文公式1
+        # logits = value_out + action_scores
+        # return logits, state
+
+
 def get_dict_state_decorator(
-    state_shape: Dict[str, Union[int, Sequence[int]]], keys: Sequence[str]
+        state_shape: Dict[str, Union[int, Sequence[int]]], keys: Sequence[str]
 ) -> Tuple[Callable, int]:
     """A helper function to make Net or equivalent classes (e.g. Actor, Critic) \
     applicable to dict state.
@@ -482,7 +643,7 @@ def get_dict_state_decorator(
     new_state_shape = sum(flat_state_shapes)
 
     def preprocess_obs(
-        obs: Union[Batch, dict, torch.Tensor, np.ndarray]
+            obs: Union[Batch, dict, torch.Tensor, np.ndarray]
     ) -> torch.Tensor:
         if isinstance(obs, dict) or (isinstance(obs, Batch) and keys[0] in obs):
             if original_shape[keys[0]] == obs[keys[0]].shape:
@@ -504,10 +665,10 @@ def get_dict_state_decorator(
         class new_net_class(net_class):
 
             def forward(
-                self,
-                obs: Union[np.ndarray, torch.Tensor],
-                *args,
-                **kwargs,
+                    self,
+                    obs: Union[np.ndarray, torch.Tensor],
+                    *args,
+                    **kwargs,
             ) -> Any:
                 return super().forward(preprocess_obs(obs), *args, **kwargs)
 

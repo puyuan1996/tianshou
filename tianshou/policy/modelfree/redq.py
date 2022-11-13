@@ -53,23 +53,23 @@ class REDQPolicy(DDPGPolicy):
     """
 
     def __init__(
-        self,
-        actor: torch.nn.Module,
-        actor_optim: torch.optim.Optimizer,
-        critics: torch.nn.Module,
-        critics_optim: torch.optim.Optimizer,
-        ensemble_size: int = 10,
-        subset_size: int = 2,
-        tau: float = 0.005,
-        gamma: float = 0.99,
-        alpha: Union[float, Tuple[float, torch.Tensor, torch.optim.Optimizer]] = 0.2,
-        reward_normalization: bool = False,
-        estimation_step: int = 1,
-        actor_delay: int = 20,
-        exploration_noise: Optional[BaseNoise] = None,
-        deterministic_eval: bool = True,
-        target_mode: str = "min",
-        **kwargs: Any,
+            self,
+            actor: torch.nn.Module,
+            actor_optim: torch.optim.Optimizer,
+            critics: torch.nn.Module,
+            critics_optim: torch.optim.Optimizer,
+            ensemble_size: int = 10,
+            subset_size: int = 2,
+            tau: float = 0.005,
+            gamma: float = 0.99,
+            alpha: Union[float, Tuple[float, torch.Tensor, torch.optim.Optimizer]] = 0.2,
+            reward_normalization: bool = False,
+            estimation_step: int = 1,
+            actor_delay: int = 20,
+            exploration_noise: Optional[BaseNoise] = None,
+            deterministic_eval: bool = True,
+            target_mode: str = "min",
+            **kwargs: Any,
     ) -> None:
         super().__init__(
             None, None, None, None, tau, gamma, exploration_noise,
@@ -115,11 +115,11 @@ class REDQPolicy(DDPGPolicy):
             o.data.copy_(o.data * (1.0 - self.tau) + n.data * self.tau)
 
     def forward(  # type: ignore
-        self,
-        batch: Batch,
-        state: Optional[Union[dict, Batch, np.ndarray]] = None,
-        input: str = "obs",
-        **kwargs: Any,
+            self,
+            batch: Batch,
+            state: Optional[Union[dict, Batch, np.ndarray]] = None,
+            input: str = "obs",
+            **kwargs: Any,
     ) -> Batch:
         obs = batch[input]
         logits, h = self.actor(obs, state=state, info=batch.info)

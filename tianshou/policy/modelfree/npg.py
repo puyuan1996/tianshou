@@ -47,15 +47,15 @@ class NPGPolicy(A2CPolicy):
     """
 
     def __init__(
-        self,
-        actor: torch.nn.Module,
-        critic: torch.nn.Module,
-        optim: torch.optim.Optimizer,
-        dist_fn: Type[torch.distributions.Distribution],
-        advantage_normalization: bool = True,
-        optim_critic_iters: int = 5,
-        actor_step_size: float = 0.5,
-        **kwargs: Any,
+            self,
+            actor: torch.nn.Module,
+            critic: torch.nn.Module,
+            optim: torch.optim.Optimizer,
+            dist_fn: Type[torch.distributions.Distribution],
+            advantage_normalization: bool = True,
+            optim_critic_iters: int = 5,
+            actor_step_size: float = 0.5,
+            **kwargs: Any,
     ) -> None:
         super().__init__(actor, critic, optim, dist_fn, **kwargs)
         del self._weight_vf, self._weight_ent, self._grad_norm
@@ -66,7 +66,7 @@ class NPGPolicy(A2CPolicy):
         self._damping = 0.1
 
     def process_fn(
-        self, batch: Batch, buffer: ReplayBuffer, indices: np.ndarray
+            self, batch: Batch, buffer: ReplayBuffer, indices: np.ndarray
     ) -> Batch:
         batch = super().process_fn(batch, buffer, indices)
         old_log_prob = []
@@ -79,7 +79,7 @@ class NPGPolicy(A2CPolicy):
         return batch
 
     def learn(  # type: ignore
-        self, batch: Batch, batch_size: int, repeat: int, **kwargs: Any
+            self, batch: Batch, batch_size: int, repeat: int, **kwargs: Any
     ) -> Dict[str, List[float]]:
         actor_losses, vf_losses, kls = [], [], []
         for _ in range(repeat):
@@ -142,11 +142,11 @@ class NPGPolicy(A2CPolicy):
         return flat_kl_grad_grad + v * self._damping
 
     def _conjugate_gradients(
-        self,
-        minibatch: torch.Tensor,
-        flat_kl_grad: torch.Tensor,
-        nsteps: int = 10,
-        residual_tol: float = 1e-10
+            self,
+            minibatch: torch.Tensor,
+            flat_kl_grad: torch.Tensor,
+            nsteps: int = 10,
+            residual_tol: float = 1e-10
     ) -> torch.Tensor:
         x = torch.zeros_like(minibatch)
         r, p = minibatch.clone(), minibatch.clone()
@@ -166,13 +166,13 @@ class NPGPolicy(A2CPolicy):
         return x
 
     def _get_flat_grad(
-        self, y: torch.Tensor, model: nn.Module, **kwargs: Any
+            self, y: torch.Tensor, model: nn.Module, **kwargs: Any
     ) -> torch.Tensor:
         grads = torch.autograd.grad(y, model.parameters(), **kwargs)  # type: ignore
         return torch.cat([grad.reshape(-1) for grad in grads])
 
     def _set_from_flat_params(
-        self, model: nn.Module, flat_params: torch.Tensor
+            self, model: nn.Module, flat_params: torch.Tensor
     ) -> nn.Module:
         prev_ind = 0
         for param in model.parameters():

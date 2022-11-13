@@ -8,7 +8,7 @@ from tianshou.policy import DQNPolicy
 from tianshou.utils.net.common import BranchingNet
 
 
-class BranchingDQNPolicy(DQNPolicy):
+class HGQNr1LinearMixPolicy(DQNPolicy):
     """Implementation of the Branching dual Q network arXiv:1711.08946.
 
     :param torch.nn.Module model: a model following the rules in
@@ -46,6 +46,7 @@ class BranchingDQNPolicy(DQNPolicy):
         assert estimation_step == 1, "N-step bigger than one is not supported by BDQ"
         self.max_action_num = model.action_per_branch
         self.num_branches = model.num_branches
+        self.mix_net = torch.nn.Linear(self.num_branches, 1)
 
     def _target_q(self, buffer: ReplayBuffer, indices: np.ndarray) -> torch.Tensor:
         batch = buffer[indices]  # batch.obs_next: s_{t+n}
@@ -76,17 +77,22 @@ class BranchingDQNPolicy(DQNPolicy):
         end_flag = buffer.done.copy()
         end_flag[buffer.unfinished_index()] = True
         end_flag = end_flag[indice]
-        mean_target_q = np.mean(target_q, -1) if len(target_q.shape) > 1 else target_q  # 原论文公式6
+        # mix net
+        # mean_target_q = np.mean(target_q, -1) if len(target_q.shape) > 1 else target_q  # 原论文公式6
         # print("=======_compute_return========")
         # print('target_q.shape', target_q.shape) # [512, 3]
         # print('rew.shape', rew.shape) # [512, ]
 
-        _target_q = rew + gamma * mean_target_q * (1 - end_flag)
-        target_q = np.repeat(_target_q[..., None], self.num_branches, axis=-1)
-        target_q = np.repeat(target_q[..., None], self.max_action_num, axis=-1)  # action_per_branch = num_of_bins
+        mix_target_q_torch = self.mix_net(to_torch(target_q))  # [512, 1]
+        mix_target_q = to_numpy(mix_target_q_torch).squeeze(-1)  # [512, ]
+
+        _target_q = rew + gamma * mix_target_q * (1 - end_flag)
+        target_q = _target_q
+
+        # target_q = np.repeat(_target_q[..., None], self.num_branches, axis=-1)
+        # target_q = np.repeat(target_q[..., None], self.max_action_num, axis=-1)  # action_per_branch = num_of_bins
 
         batch.returns = to_torch_as(target_q, target_q_torch)
-        # print(' batch.returns.shape',  batch.returns.shape)  # [512, 3, 5]
 
         if hasattr(batch, "weight"):  # prio buffer update
             batch.weight = to_torch_as(batch.weight, target_q_torch)
@@ -127,18 +133,24 @@ class BranchingDQNPolicy(DQNPolicy):
 
         act_mask = torch.zeros_like(q)
         act_mask = act_mask.scatter_(-1, act.unsqueeze(-1), 1)
-
         # print('act_mask.shape', act_mask.shape)  # [512,3,5]
 
         # only the selected action bin in each dim is non-zero
-        act_q = q * act_mask
-        returns = batch.returns
-        print('returns.shape', returns.shape)  # [512,3,5]
-        returns = returns * act_mask
-        # print('returns.shape', returns.shape)  # [512,3,5]
-        # print('act_q.shape', act_q.shape)  # [512,3,5]
+        act_q = q * act_mask  # [512, 3, 5]
+        # act_q.sum(-1) is the selected action-q value
+        mix_act_q_torch = self.mix_net(to_torch(act_q.sum(-1)))  # [512, 1]
+        mix_act_q = mix_act_q_torch.squeeze(-1)  # [512, ]
 
-        td_error = returns - act_q
+        returns = batch.returns
+
+        # print('returns.shape', returns.shape)  # [512,3,5]
+        # returns = returns * act_mask
+        # # print('returns.shape', returns.shape)  # [512,3,5]
+        # # print('act_q.shape', act_q.shape)  # [512,3,5]
+        # td_error = returns - act_q
+
+        td_error = returns - mix_act_q
+
         loss = (td_error.pow(2).sum(-1).mean(-1) * weight).mean()
         batch.weight = td_error.sum(-1).sum(-1)  # prio-buffer
         loss.backward()

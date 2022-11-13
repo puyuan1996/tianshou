@@ -42,19 +42,19 @@ class DDPGPolicy(BasePolicy):
     """
 
     def __init__(
-        self,
-        actor: Optional[torch.nn.Module],
-        actor_optim: Optional[torch.optim.Optimizer],
-        critic: Optional[torch.nn.Module],
-        critic_optim: Optional[torch.optim.Optimizer],
-        tau: float = 0.005,
-        gamma: float = 0.99,
-        exploration_noise: Optional[BaseNoise] = GaussianNoise(sigma=0.1),
-        reward_normalization: bool = False,
-        estimation_step: int = 1,
-        action_scaling: bool = True,
-        action_bound_method: str = "clip",
-        **kwargs: Any,
+            self,
+            actor: Optional[torch.nn.Module],
+            actor_optim: Optional[torch.optim.Optimizer],
+            critic: Optional[torch.nn.Module],
+            critic_optim: Optional[torch.optim.Optimizer],
+            tau: float = 0.005,
+            gamma: float = 0.99,
+            exploration_noise: Optional[BaseNoise] = GaussianNoise(sigma=0.1),
+            reward_normalization: bool = False,
+            estimation_step: int = 1,
+            action_scaling: bool = True,
+            action_bound_method: str = "clip",
+            **kwargs: Any,
     ) -> None:
         super().__init__(
             action_scaling=action_scaling,
@@ -62,8 +62,8 @@ class DDPGPolicy(BasePolicy):
             **kwargs
         )
         assert action_bound_method != "tanh", "tanh mapping is not supported" \
-            "in policies where action is used as input of critic , because" \
-            "raw action in range (-inf, inf) will cause instability in training"
+                                              "in policies where action is used as input of critic , because" \
+                                              "raw action in range (-inf, inf) will cause instability in training"
         if actor is not None and actor_optim is not None:
             self.actor: torch.nn.Module = actor
             self.actor_old = deepcopy(actor)
@@ -109,7 +109,7 @@ class DDPGPolicy(BasePolicy):
         return target_q
 
     def process_fn(
-        self, batch: Batch, buffer: ReplayBuffer, indices: np.ndarray
+            self, batch: Batch, buffer: ReplayBuffer, indices: np.ndarray
     ) -> Batch:
         batch = self.compute_nstep_return(
             batch, buffer, indices, self._target_q, self._gamma, self._n_step,
@@ -118,12 +118,12 @@ class DDPGPolicy(BasePolicy):
         return batch
 
     def forward(
-        self,
-        batch: Batch,
-        state: Optional[Union[dict, Batch, np.ndarray]] = None,
-        model: str = "actor",
-        input: str = "obs",
-        **kwargs: Any,
+            self,
+            batch: Batch,
+            state: Optional[Union[dict, Batch, np.ndarray]] = None,
+            model: str = "actor",
+            input: str = "obs",
+            **kwargs: Any,
     ) -> Batch:
         """Compute action over the given batch data.
 
@@ -144,7 +144,7 @@ class DDPGPolicy(BasePolicy):
 
     @staticmethod
     def _mse_optimizer(
-        batch: Batch, critic: torch.nn.Module, optimizer: torch.optim.Optimizer
+            batch: Batch, critic: torch.nn.Module, optimizer: torch.optim.Optimizer
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         """A simple wrapper script for updating critic network."""
         weight = getattr(batch, "weight", 1.0)

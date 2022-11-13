@@ -36,16 +36,16 @@ class PGPolicy(BasePolicy):
     """
 
     def __init__(
-        self,
-        model: torch.nn.Module,
-        optim: torch.optim.Optimizer,
-        dist_fn: Type[torch.distributions.Distribution],
-        discount_factor: float = 0.99,
-        reward_normalization: bool = False,
-        action_scaling: bool = True,
-        action_bound_method: str = "clip",
-        deterministic_eval: bool = False,
-        **kwargs: Any,
+            self,
+            model: torch.nn.Module,
+            optim: torch.optim.Optimizer,
+            dist_fn: Type[torch.distributions.Distribution],
+            discount_factor: float = 0.99,
+            reward_normalization: bool = False,
+            action_scaling: bool = True,
+            action_bound_method: str = "clip",
+            deterministic_eval: bool = False,
+            **kwargs: Any,
     ) -> None:
         super().__init__(
             action_scaling=action_scaling,
@@ -63,7 +63,7 @@ class PGPolicy(BasePolicy):
         self._deterministic_eval = deterministic_eval
 
     def process_fn(
-        self, batch: Batch, buffer: ReplayBuffer, indices: np.ndarray
+            self, batch: Batch, buffer: ReplayBuffer, indices: np.ndarray
     ) -> Batch:
         r"""Compute the discounted returns for each transition.
 
@@ -79,17 +79,17 @@ class PGPolicy(BasePolicy):
         )
         if self._rew_norm:
             batch.returns = (unnormalized_returns - self.ret_rms.mean) / \
-                np.sqrt(self.ret_rms.var + self._eps)
+                            np.sqrt(self.ret_rms.var + self._eps)
             self.ret_rms.update(unnormalized_returns)
         else:
             batch.returns = unnormalized_returns
         return batch
 
     def forward(
-        self,
-        batch: Batch,
-        state: Optional[Union[dict, Batch, np.ndarray]] = None,
-        **kwargs: Any,
+            self,
+            batch: Batch,
+            state: Optional[Union[dict, Batch, np.ndarray]] = None,
+            **kwargs: Any,
     ) -> Batch:
         """Compute action over the given batch data.
 
@@ -120,7 +120,7 @@ class PGPolicy(BasePolicy):
         return Batch(logits=logits, act=act, state=hidden, dist=dist)
 
     def learn(  # type: ignore
-        self, batch: Batch, batch_size: int, repeat: int, **kwargs: Any
+            self, batch: Batch, batch_size: int, repeat: int, **kwargs: Any
     ) -> Dict[str, List[float]]:
         losses = []
         for _ in range(repeat):

@@ -8,7 +8,7 @@ from tianshou.policy import DQNPolicy
 from tianshou.utils.net.common import BranchingNet
 
 
-class HGQNPolicy(DQNPolicy):
+class HGQNr1SumMixPolicy(DQNPolicy):
     """Implementation of the Branching dual Q network arXiv:1711.08946.
 
     :param torch.nn.Module model: a model following the rules in
@@ -29,15 +29,15 @@ class HGQNPolicy(DQNPolicy):
     """
 
     def __init__(
-        self,
-        model: BranchingNet,
-        optim: torch.optim.Optimizer,
-        discount_factor: float = 0.99,
-        estimation_step: int = 1,
-        target_update_freq: int = 0,
-        reward_normalization: bool = False,
-        is_double: bool = True,
-        **kwargs: Any,
+            self,
+            model: BranchingNet,
+            optim: torch.optim.Optimizer,
+            discount_factor: float = 0.99,
+            estimation_step: int = 1,
+            target_update_freq: int = 0,
+            reward_normalization: bool = False,
+            is_double: bool = True,
+            **kwargs: Any,
     ) -> None:
         super().__init__(
             model, optim, discount_factor, estimation_step, target_update_freq,
@@ -46,6 +46,7 @@ class HGQNPolicy(DQNPolicy):
         assert estimation_step == 1, "N-step bigger than one is not supported by BDQ"
         self.max_action_num = model.action_per_branch
         self.num_branches = model.num_branches
+        # self.mix_net = torch.nn.Linear(self.num_branches, 1)
 
     def _target_q(self, buffer: ReplayBuffer, indices: np.ndarray) -> torch.Tensor:
         batch = buffer[indices]  # batch.obs_next: s_{t+n}
@@ -63,11 +64,11 @@ class HGQNPolicy(DQNPolicy):
         return torch.gather(target_q, -1, act).squeeze()
 
     def _compute_return(
-        self,
-        batch: Batch,
-        buffer: ReplayBuffer,
-        indice: np.ndarray,
-        gamma: float = 0.99,
+            self,
+            batch: Batch,
+            buffer: ReplayBuffer,
+            indice: np.ndarray,
+            gamma: float = 0.99,
     ) -> Batch:
         rew = batch.rew
         with torch.no_grad():
@@ -76,29 +77,40 @@ class HGQNPolicy(DQNPolicy):
         end_flag = buffer.done.copy()
         end_flag[buffer.unfinished_index()] = True
         end_flag = end_flag[indice]
-        mean_target_q = np.mean(target_q, -1) if len(target_q.shape) > 1 else target_q  # 原论文公式6
-        _target_q = rew + gamma * mean_target_q * (1 - end_flag)
-        target_q = np.repeat(_target_q[..., None], self.num_branches, axis=-1)
-        target_q = np.repeat(target_q[..., None], self.max_action_num, axis=-1)
+        # mix net
+        # mean_target_q = np.mean(target_q, -1) if len(target_q.shape) > 1 else target_q  # 原论文公式6
+        # print("=======_compute_return========")
+        # print('target_q.shape', target_q.shape) # [512, 3]
+        # print('rew.shape', rew.shape) # [512, ]
+
+        mix_target_q_torch = torch.sum(to_torch(target_q), dim=-1)  # [512, 1]
+        mix_target_q = to_numpy(mix_target_q_torch)  # [512, ]
+
+        _target_q = rew + gamma * mix_target_q * (1 - end_flag)
+        target_q = _target_q
+
+        # target_q = np.repeat(_target_q[..., None], self.num_branches, axis=-1)
+        # target_q = np.repeat(target_q[..., None], self.max_action_num, axis=-1)  # action_per_branch = num_of_bins
 
         batch.returns = to_torch_as(target_q, target_q_torch)
+
         if hasattr(batch, "weight"):  # prio buffer update
             batch.weight = to_torch_as(batch.weight, target_q_torch)
         return batch
 
     def process_fn(
-        self, batch: Batch, buffer: ReplayBuffer, indices: np.ndarray
+            self, batch: Batch, buffer: ReplayBuffer, indices: np.ndarray
     ) -> Batch:
         """Compute the 1-step return for BDQ targets."""
         return self._compute_return(batch, buffer, indices)
 
     def forward(
-        self,
-        batch: Batch,
-        state: Optional[Union[Dict, Batch, np.ndarray]] = None,
-        model: str = "model",
-        input: str = "obs",
-        **kwargs: Any,
+            self,
+            batch: Batch,
+            state: Optional[Union[Dict, Batch, np.ndarray]] = None,
+            model: str = "model",
+            input: str = "obs",
+            **kwargs: Any,
     ) -> Batch:
         model = getattr(self, model)
         obs = batch[input]
@@ -114,12 +126,31 @@ class HGQNPolicy(DQNPolicy):
         weight = batch.pop("weight", 1.0)
         act = to_torch(batch.act, dtype=torch.long, device=batch.returns.device)
         q = self(batch).logits
+
+        # print("=======learn========")
+        # print('act.shape', act.shape)   # [512,3]
+        # print('q.shape', q.shape)  # [512,3,5]
+
         act_mask = torch.zeros_like(q)
         act_mask = act_mask.scatter_(-1, act.unsqueeze(-1), 1)
-        act_q = q * act_mask
+        # print('act_mask.shape', act_mask.shape)  # [512,3,5]
+
+        # only the selected action bin in each dim is non-zero
+        act_q = q * act_mask  # [512, 3, 5]
+        # act_q.sum(-1) is the selected action-q value
+        mix_act_q_torch = torch.sum(to_torch(act_q.sum(-1)))  # [512, 1]
+        mix_act_q = mix_act_q_torch  # [512, ]
+
         returns = batch.returns
-        returns = returns * act_mask
-        td_error = returns - act_q
+
+        # print('returns.shape', returns.shape)  # [512,3,5]
+        # returns = returns * act_mask
+        # # print('returns.shape', returns.shape)  # [512,3,5]
+        # # print('act_q.shape', act_q.shape)  # [512,3,5]
+        # td_error = returns - act_q
+
+        td_error = returns - mix_act_q
+
         loss = (td_error.pow(2).sum(-1).mean(-1) * weight).mean()
         batch.weight = td_error.sum(-1).sum(-1)  # prio-buffer
         loss.backward()
@@ -128,9 +159,9 @@ class HGQNPolicy(DQNPolicy):
         return {"loss": loss.item()}
 
     def exploration_noise(
-        self,
-        act: Union[np.ndarray, Batch],
-        batch: Batch,
+            self,
+            act: Union[np.ndarray, Batch],
+            batch: Batch,
     ) -> Union[np.ndarray, Batch]:
         if isinstance(act, np.ndarray) and not np.isclose(self.eps, 0.0):
             bsz = len(act)

@@ -38,19 +38,19 @@ class DiscreteSACPolicy(SACPolicy):
     """
 
     def __init__(
-        self,
-        actor: torch.nn.Module,
-        actor_optim: torch.optim.Optimizer,
-        critic1: torch.nn.Module,
-        critic1_optim: torch.optim.Optimizer,
-        critic2: torch.nn.Module,
-        critic2_optim: torch.optim.Optimizer,
-        tau: float = 0.005,
-        gamma: float = 0.99,
-        alpha: Union[float, Tuple[float, torch.Tensor, torch.optim.Optimizer]] = 0.2,
-        reward_normalization: bool = False,
-        estimation_step: int = 1,
-        **kwargs: Any,
+            self,
+            actor: torch.nn.Module,
+            actor_optim: torch.optim.Optimizer,
+            critic1: torch.nn.Module,
+            critic1_optim: torch.optim.Optimizer,
+            critic2: torch.nn.Module,
+            critic2_optim: torch.optim.Optimizer,
+            tau: float = 0.005,
+            gamma: float = 0.99,
+            alpha: Union[float, Tuple[float, torch.Tensor, torch.optim.Optimizer]] = 0.2,
+            reward_normalization: bool = False,
+            estimation_step: int = 1,
+            **kwargs: Any,
     ) -> None:
         super().__init__(
             actor,
@@ -71,11 +71,11 @@ class DiscreteSACPolicy(SACPolicy):
         self._alpha: Union[float, torch.Tensor]
 
     def forward(  # type: ignore
-        self,
-        batch: Batch,
-        state: Optional[Union[dict, Batch, np.ndarray]] = None,
-        input: str = "obs",
-        **kwargs: Any,
+            self,
+            batch: Batch,
+            state: Optional[Union[dict, Batch, np.ndarray]] = None,
+            input: str = "obs",
+            **kwargs: Any,
     ) -> Batch:
         obs = batch[input]
         logits, hidden = self.actor(obs, state=state, info=batch.info)

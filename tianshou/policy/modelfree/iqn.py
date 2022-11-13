@@ -36,17 +36,17 @@ class IQNPolicy(QRDQNPolicy):
     """
 
     def __init__(
-        self,
-        model: torch.nn.Module,
-        optim: torch.optim.Optimizer,
-        discount_factor: float = 0.99,
-        sample_size: int = 32,
-        online_sample_size: int = 8,
-        target_sample_size: int = 8,
-        estimation_step: int = 1,
-        target_update_freq: int = 0,
-        reward_normalization: bool = False,
-        **kwargs: Any,
+            self,
+            model: torch.nn.Module,
+            optim: torch.optim.Optimizer,
+            discount_factor: float = 0.99,
+            sample_size: int = 32,
+            online_sample_size: int = 8,
+            target_sample_size: int = 8,
+            estimation_step: int = 1,
+            target_update_freq: int = 0,
+            reward_normalization: bool = False,
+            **kwargs: Any,
     ) -> None:
         super().__init__(
             model, optim, discount_factor, sample_size, estimation_step,
@@ -60,12 +60,12 @@ class IQNPolicy(QRDQNPolicy):
         self._target_sample_size = target_sample_size
 
     def forward(
-        self,
-        batch: Batch,
-        state: Optional[Union[dict, Batch, np.ndarray]] = None,
-        model: str = "model",
-        input: str = "obs",
-        **kwargs: Any,
+            self,
+            batch: Batch,
+            state: Optional[Union[dict, Batch, np.ndarray]] = None,
+            model: str = "model",
+            input: str = "obs",
+            **kwargs: Any,
     ) -> Batch:
         if model == "model_old":
             sample_size = self._target_sample_size
@@ -98,9 +98,9 @@ class IQNPolicy(QRDQNPolicy):
         # calculate each element's difference between curr_dist and target_dist
         dist_diff = F.smooth_l1_loss(target_dist, curr_dist, reduction="none")
         huber_loss = (
-            dist_diff *
-            (taus.unsqueeze(2) -
-             (target_dist - curr_dist).detach().le(0.).float()).abs()
+                dist_diff *
+                (taus.unsqueeze(2) -
+                 (target_dist - curr_dist).detach().le(0.).float()).abs()
         ).sum(-1).mean(1)
         loss = (huber_loss * weight).mean()
         # ref: https://github.com/ku2482/fqf-iqn-qrdqn.pytorch/
