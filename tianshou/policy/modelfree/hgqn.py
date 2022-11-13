@@ -8,7 +8,7 @@ from tianshou.policy import DQNPolicy
 from tianshou.utils.net.common import BranchingNet
 
 
-class BranchingDQNPolicy(DQNPolicy):
+class HGQNPolicy(DQNPolicy):
     """Implementation of the Branching dual Q network arXiv:1711.08946.
 
     :param torch.nn.Module model: a model following the rules in

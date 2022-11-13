@@ -453,7 +453,7 @@ class BranchingNet(nn.Module):
         for b in self.branches:
             action_out.append(b(common_out))
         action_scores = torch.stack(action_out, 1)
-        action_scores = action_scores - torch.mean(action_scores, 2, keepdim=True)
+        action_scores = action_scores - torch.mean(action_scores, 2, keepdim=True)  # 论文公式1
         logits = value_out + action_scores
         return logits, state
 
