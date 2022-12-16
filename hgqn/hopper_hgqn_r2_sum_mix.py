@@ -1,4 +1,5 @@
 import sys
+
 # sys.path.append('/Users/puyuan/code/tianshou')
 # sys.path.append('/home/puyuan/tianshou')
 sys.path.append('/mnt/nfs/puyuan/tianshou')
@@ -23,7 +24,6 @@ from tianshou.utils import TensorboardLogger
 from tianshou.utils.net.common import HypergraphNet
 
 
-
 def get_args():
     parser = argparse.ArgumentParser()
     # task
@@ -44,7 +44,8 @@ def get_args():
     parser.add_argument("--lr", type=float, default=1e-4)
     parser.add_argument("--gamma", type=float, default=0.99)
     parser.add_argument("--target-update-freq", type=int, default=1000)
-    parser.add_argument("--epoch", type=int, default=1000)
+    # parser.add_argument("--epoch", type=int, default=1000)
+    parser.add_argument("--epoch", type=int, default=50)
     parser.add_argument("--step-per-epoch", type=int, default=80000)
     parser.add_argument("--step-per-collect", type=int, default=16)
     parser.add_argument("--update-per-step", type=float, default=0.0625)
@@ -65,7 +66,7 @@ def get_args():
 def train(seed):
     args = get_args()
     args.seed = seed
-    args.logdir = "log_hopper_r2_sum_mix"
+    args.logdir = f"log_hopper_r2_sum_mix_seed{seed}"
 
     env = gym.make(args.task)
     env = ContinuousToDiscrete(env, args.action_per_branch)
@@ -77,7 +78,8 @@ def train(seed):
 
     # r2 related
     action_shape = args.action_shape if isinstance(args.action_shape, int) else args.action_shape[0]
-    num_branch_pairs = action_shape * args.action_per_branch+ int(action_shape * (action_shape - 1) / 2) * args.action_per_branch **2  # 3*5 + 3* 5**2 = 15+75=90
+    num_branch_pairs = action_shape * args.action_per_branch + int(
+        action_shape * (action_shape - 1) / 2) * args.action_per_branch ** 2  # 3*5 + 3*2/2* 5**2 = 15+75=90
     args.num_branches = num_branch_pairs
     # e.g., n=3,
     # rank-1, 1, 2, 3
@@ -150,7 +152,7 @@ def train(seed):
         return mean_rewards >= getattr(env.spec.reward_threshold)
 
     def train_fn(epoch, env_step):  # exp decay
-        eps = max(args.eps_train * (1 - args.eps_decay)**env_step, args.eps_test)
+        eps = max(args.eps_train * (1 - args.eps_decay) ** env_step, args.eps_test)
         policy.set_eps(eps)
 
     def test_fn(epoch, env_step):

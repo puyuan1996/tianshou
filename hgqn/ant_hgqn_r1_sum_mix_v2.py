@@ -27,7 +27,7 @@ from tianshou.utils.net.common import HypergraphNet
 def get_args():
     parser = argparse.ArgumentParser()
     # task
-    parser.add_argument("--task", type=str, default="Hopper-v3")
+    parser.add_argument("--task", type=str, default="Ant-v3")
     # network architecture
     parser.add_argument(
         "--common-hidden-sizes", type=int, nargs="*", default=[512, 256]
@@ -46,15 +46,14 @@ def get_args():
     parser.add_argument("--target-update-freq", type=int, default=1000)
     # parser.add_argument("--epoch", type=int, default=1000)
     parser.add_argument("--epoch", type=int, default=50)
-
     parser.add_argument("--step-per-epoch", type=int, default=80000)
     parser.add_argument("--step-per-collect", type=int, default=16)
     parser.add_argument("--update-per-step", type=float, default=0.0625)
     parser.add_argument("--batch-size", type=int, default=512)
-    parser.add_argument("--training-num", type=int, default=20)
-    parser.add_argument("--test-num", type=int, default=10)
-    # parser.add_argument("--training-num", type=int, default=1)
-    # parser.add_argument("--test-num", type=int, default=1)
+    # parser.add_argument("--training-num", type=int, default=20)
+    # parser.add_argument("--test-num", type=int, default=10)
+    parser.add_argument("--training-num", type=int, default=1)
+    parser.add_argument("--test-num", type=int, default=1)
     # other
     parser.add_argument("--logdir", type=str, default="log")
     parser.add_argument("--render", type=float, default=0.)
@@ -67,7 +66,7 @@ def get_args():
 def train(seed):
     args = get_args()
     args.seed = seed
-    args.logdir = f"log_hopper_r1_linear_mix_seed{seed}"
+    args.logdir = f"log_ant_r1_sum_mix_seed{seed}"
 
     env = gym.make(args.task)
     env = ContinuousToDiscrete(env, args.action_per_branch)
@@ -120,14 +119,15 @@ def train(seed):
         args.value_hidden_sizes,
         args.action_hidden_sizes,
         device=args.device,
-        mix_type='linear_mix',
+        mix_type='sum_mix',
         hyper_order=1,
     ).to(args.device)
     print("=======net========")
 
     optim = torch.optim.Adam(net.parameters(), lr=args.lr)
     policy = HGQNr2LinearMixPolicy(
-        net, optim, args.gamma, target_update_freq=args.target_update_freq, original_action_dim=action_shape, hyper_order=1,
+        net, optim, args.gamma, target_update_freq=args.target_update_freq, original_action_dim=action_shape,
+        hyper_order=1,
     )
     # collector
     train_collector = Collector(
@@ -147,23 +147,18 @@ def train(seed):
     writer = SummaryWriter(log_path)
     logger = TensorboardLogger(writer)
 
-
     def save_best_fn(policy):
         torch.save(policy.state_dict(), os.path.join(log_path, "policy.pth"))
 
-
     def stop_fn(mean_rewards):
         return mean_rewards >= getattr(env.spec.reward_threshold)
-
 
     def train_fn(epoch, env_step):  # exp decay
         eps = max(args.eps_train * (1 - args.eps_decay) ** env_step, args.eps_test)
         policy.set_eps(eps)
 
-
     def test_fn(epoch, env_step):
         policy.set_eps(args.eps_test)
-
 
     print("=======trainer begin========")
 
@@ -198,6 +193,9 @@ def train(seed):
     rews, lens = result["rews"], result["lens"]
     print(f"Final reward: {rews.mean()}, length: {lens.mean()}")
 
+
 if __name__ == "__main__":
     for seed in [0, 1, 2]:
         train(seed)
+
+

@@ -44,7 +44,8 @@ def get_args():
     parser.add_argument("--lr", type=float, default=1e-4)
     parser.add_argument("--gamma", type=float, default=0.99)
     parser.add_argument("--target-update-freq", type=int, default=1000)
-    parser.add_argument("--epoch", type=int, default=1000)
+    # parser.add_argument("--epoch", type=int, default=1000)
+    parser.add_argument("--epoch", type=int, default=50)
     parser.add_argument("--step-per-epoch", type=int, default=80000)
     parser.add_argument("--step-per-collect", type=int, default=16)
     parser.add_argument("--update-per-step", type=float, default=0.0625)
@@ -65,7 +66,7 @@ def get_args():
 def train(seed):
     args = get_args()
     args.seed = seed
-    args.logdir = "log_halfcheetah_r2_sum_mix"
+    args.logdir = f"log_halfcheetah_r2_sum_mix_seed{seed}"
 
     env = gym.make(args.task)
     env = ContinuousToDiscrete(env, args.action_per_branch)
